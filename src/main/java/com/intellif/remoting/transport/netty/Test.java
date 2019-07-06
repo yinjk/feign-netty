@@ -1,6 +1,5 @@
 package com.intellif.remoting.transport.netty;
 
-import com.intellif.remoting.RemotingException;
 import io.netty.channel.Channel;
 
 import java.net.InetSocketAddress;
@@ -14,54 +13,54 @@ public class Test {
     public static void main(String[] args) throws Throwable {
         NettyChannelHandler serverHandler = new NettyChannelHandler() {
             @Override
-            public void connected(Channel channel) throws RemotingException {
+            public void connected(Channel channel) {
                 channel.writeAndFlush("hello");
             }
 
             @Override
-            public void disconnected(Channel channel) throws RemotingException {
+            public void disconnected(Channel channel) {
                 channel.writeAndFlush("see you");
             }
 
             @Override
-            public void sent(Channel channel, Object message) throws RemotingException {
+            public void sent(Channel channel, Object message) {
                 System.out.println("server sent: " + message);
             }
 
             @Override
-            public void received(Channel channel, Object message) throws RemotingException {
+            public void received(Channel channel, Object message) {
                 System.out.println("server received:" + message);
                 channel.writeAndFlush("i'm received your message: " + message);
             }
 
             @Override
-            public void caught(Channel channel, Throwable exception) throws RemotingException {
+            public void caught(Channel channel, Throwable exception) {
                 System.out.println(NetUtils.toAddressString((InetSocketAddress) channel.remoteAddress()));
             }
         };
         NettyChannelHandler clientHandler = new NettyChannelHandler() {
             @Override
-            public void connected(Channel channel) throws RemotingException {
+            public void connected(Channel channel) {
                 channel.writeAndFlush("client connected");
             }
 
             @Override
-            public void disconnected(Channel channel) throws RemotingException {
+            public void disconnected(Channel channel) {
                 channel.writeAndFlush("886");
             }
 
             @Override
-            public void sent(Channel channel, Object message) throws RemotingException {
+            public void sent(Channel channel, Object message) {
                 System.out.println("client[" + channel.localAddress() + "] sent to[" + channel.remoteAddress() + "]: " + message);
             }
 
             @Override
-            public void received(Channel channel, Object message) throws RemotingException {
+            public void received(Channel channel, Object message) {
                 System.out.println("client[" + channel.localAddress() + "] received[" + channel.remoteAddress() + "]: " + message);
             }
 
             @Override
-            public void caught(Channel channel, Throwable exception) throws RemotingException {
+            public void caught(Channel channel, Throwable exception) {
                 System.out.println(NetUtils.toAddressString((InetSocketAddress) channel.remoteAddress()));
             }
         };
