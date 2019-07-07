@@ -99,6 +99,7 @@ public class NettyServer implements Server {
                 });
         // bind
         ChannelFuture channelFuture = bootstrap.bind(new InetSocketAddress(port));
+        logger.info("Netty server started on port(s): " + port);
         channelFuture.syncUninterruptibly();
         channel = channelFuture.channel();
     }

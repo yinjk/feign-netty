@@ -11,7 +11,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public class Test {
     public static void main(String[] args) throws Throwable {
-        NettyChannelHandler serverHandler = new NettyChannelHandler() {
+        NettyChannelHandler serverHandler = new AbstractNettyChannelHandler() {
             @Override
             public void connected(Channel channel) {
                 channel.writeAndFlush("hello");
@@ -38,7 +38,7 @@ public class Test {
                 System.out.println(NetUtils.toAddressString((InetSocketAddress) channel.remoteAddress()));
             }
         };
-        NettyChannelHandler clientHandler = new NettyChannelHandler() {
+        NettyChannelHandler clientHandler = new AbstractNettyChannelHandler() {
             @Override
             public void connected(Channel channel) {
                 channel.writeAndFlush("client connected");

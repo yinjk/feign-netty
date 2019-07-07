@@ -2,6 +2,7 @@ package com.intellif.feign;
 
 import com.alibaba.fastjson.JSON;
 import com.intellif.remoting.RemotingException;
+import com.intellif.remoting.transport.netty.AbstractNettyChannelHandler;
 import com.intellif.remoting.transport.netty.NetUtils;
 import com.intellif.remoting.transport.netty.NettyChannelHandler;
 import io.netty.channel.Channel;
@@ -16,7 +17,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * author: yinjk
  */
-public class NettyClientChannelHandler implements NettyChannelHandler {
+public class NettyClientChannelHandler extends AbstractNettyChannelHandler {
 
     private Map<String, Message> nettyResult = new ConcurrentHashMap<>(); // uuid : result [存放同步消息的返回]
 
@@ -50,12 +51,13 @@ public class NettyClientChannelHandler implements NettyChannelHandler {
 
     @Override
     public void caught(Channel channel, Throwable exception) throws RemotingException {
+        //TODO: hand this exception
         NetUtils.toAddressString((InetSocketAddress) channel.remoteAddress());
     }
 
     @Override
     public Object getResult(String uuid) throws RemotingException {
-        return nettyResult.get(uuid);
+        return nettyResult.remove(uuid);
     }
 
     @Override

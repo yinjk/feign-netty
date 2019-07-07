@@ -2,8 +2,8 @@ package com.intellif.feign;
 
 import com.alibaba.fastjson.JSON;
 import com.intellif.remoting.RemotingException;
+import com.intellif.remoting.transport.netty.AbstractNettyChannelHandler;
 import com.intellif.remoting.transport.netty.NetUtils;
-import com.intellif.remoting.transport.netty.NettyChannelHandler;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,7 @@ import java.net.InetSocketAddress;
 /**
  * author: yinjk
  */
-public class NettyServerChannelHandler implements NettyChannelHandler {
+public class NettyServerChannelHandler extends AbstractNettyChannelHandler {
 
     /**
      * logger
@@ -43,6 +43,7 @@ public class NettyServerChannelHandler implements NettyChannelHandler {
 
     @Override
     public void caught(Channel channel, Throwable exception) throws RemotingException {
+        //TODO: hand this exception
         NetUtils.toAddressString((InetSocketAddress) channel.remoteAddress());
     }
 }

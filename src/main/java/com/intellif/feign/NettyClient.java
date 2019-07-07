@@ -16,7 +16,9 @@ import java.util.concurrent.TimeUnit;
 
 public class NettyClient implements Client {
 
-    /** logger */
+    /**
+     * logger
+     */
     private static final Logger log = LoggerFactory.getLogger(NettyClient.class);
 
     private int timeout = 10;
@@ -29,16 +31,16 @@ public class NettyClient implements Client {
         com.intellif.remoting.transport.netty.NettyClient nettyClient = ServiceRunListener.nettyClientMap.get(remoteService);
         Message result = null;
         try {
+            //TODO: create transfer data(can using original request)
             result = (Message) nettyClient.sendSync(new Message(UUID.randomUUID().toString(), "你收到消息了吗？"), timeout, TimeUnit.SECONDS);
         } catch (RemotingException e) {
-            //TODO: 处理异常
+            //TODO: hand this error
             log.error(e.getMessage());
             e.printStackTrace();
         }
         if (null != result) {
-            System.out.println(result.getData());
+            //TODO: hand this result
         }
-        System.out.println(url);
         Map<String, Collection<String>> headers = new LinkedHashMap<>();
         List<String> contentType = Arrays.asList("application/json", "charset=UTF-8");
         headers.put("Content-Type", contentType);

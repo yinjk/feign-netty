@@ -13,18 +13,14 @@ public interface NettyChannelHandler {
      *
      * @param channel channel.
      */
-    default void connected(Channel channel) throws RemotingException {
-        //doing nothing...
-    }
+    void connected(Channel channel) throws RemotingException;
 
     /**
      * on channel disconnected.
      *
      * @param channel channel.
      */
-    default void disconnected(Channel channel) throws RemotingException {
-        //doing nothing...
-    }
+    void disconnected(Channel channel) throws RemotingException;
 
     /**
      * on message sent.
@@ -57,9 +53,7 @@ public interface NettyChannelHandler {
      * @return the netty result from remote
      * @throws RemotingException
      */
-    default Object getResult(String uuid) throws RemotingException {
-        return null;
-    }
+    Object getResult(String uuid) throws RemotingException;
 
     /**
      * if you want to set latch and sync result, please implement it!
@@ -67,8 +61,6 @@ public interface NettyChannelHandler {
      * @param uuid 请求的唯一id
      * @param latch 用于等待请求的超时，
      */
-    default void setLatch(String uuid, final CountDownLatch latch) {
-
-    }
+    void setLatch(String uuid, final CountDownLatch latch);
 
 }

@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/feign-netty.iml" filepath="$PROJECT_DIR$/feign-netty.iml" />
+      <module fileurl="file://$PROJECT_DIR$/privider/privider.iml" filepath="$PROJECT_DIR$/privider/privider.iml" />
     </modules>
   </component>
 </project>

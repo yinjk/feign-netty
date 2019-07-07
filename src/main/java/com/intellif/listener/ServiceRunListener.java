@@ -1,7 +1,10 @@
 package com.intellif.listener;
 
+import com.intellif.feign.NettyClientChannelHandler;
+import com.intellif.feign.NettyServerChannelHandler;
 import com.intellif.remoting.transport.netty.NettyClient;
 import com.intellif.remoting.transport.netty.NettyServer;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;
 import org.springframework.cloud.client.ServiceInstance;
@@ -40,28 +43,46 @@ public class ServiceRunListener implements SpringApplicationRunListener {
     private AtomicBoolean inited = new AtomicBoolean(false);
 
     private void connectRemote(final ApplicationContext context) throws Throwable {
+        nettyServer = startNettyServer(); //启动netty服务端
         Map<String, Object> beansWithAnnotation = context.getBeansWithAnnotation(FeignClient.class);
         for (Map.Entry<String, Object> entry : beansWithAnnotation.entrySet()) {
-            String k = entry.getKey();
             Object obj = entry.getValue();
-            FeignClient feignClient = obj.getClass().getAnnotation(FeignClient.class);
-            String providerName = feignClient.name(); //获取服务提供方的服务名
+            String providerName = getProviderName(obj); //获取服务提供方的服务名
+            if (StringUtils.isEmpty(providerName)) { //没有获取到远程主机名？跳过
+                continue;
+            }
             List<ServiceInstance> serviceInstances = searchInDiscovery(context, providerName); //获取对应服务的所有实例
-            nettyServer = startNettyServer(); //启动netty服务端
             doConnect(serviceInstances); //启动netty客户端
         }
     }
 
+    /**
+     * 通过获取被代理的feign客户端的接口上的FeignClient注解，从而获取到注解中的远程服务名
+     *
+     * @param target 被代理的feign客户端
+     * @return 远程服务名
+     */
+    private String getProviderName(Object target) {
+        Class<?> targetClass = target.getClass();
+        for (Class<?> targetInf : targetClass.getInterfaces()) {
+            FeignClient feignClient = targetInf.getAnnotation(FeignClient.class);
+            if (feignClient != null) {
+                return feignClient.name(); //获取服务提供方的服务名
+            }
+        }
+        return "";
+    }
+
     private NettyServer startNettyServer() throws Throwable {
         //TODO: 1.处理这个异常， 2. 考虑将端口可配
-        return new NettyServer(20800, null);
+        return new NettyServer(20800, new NettyServerChannelHandler());
     }
 
     private void doConnect(List<ServiceInstance> serviceInstances) throws Throwable {
         for (ServiceInstance serviceInstance : serviceInstances) {
             String remoteService = serviceInstance.getHost() + ":" + serviceInstance.getPort();
             //TODO 客户端连不上怎么办
-            nettyClientMap.putIfAbsent(remoteService, new NettyClient(serviceInstance.getHost(), 20800, null));
+            nettyClientMap.putIfAbsent(remoteService, new NettyClient(serviceInstance.getHost(), 20800, new NettyClientChannelHandler()));
         }
     }
 

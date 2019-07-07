@@ -16,6 +16,7 @@
  */
 package com.intellif.remoting.transport.netty;
 
+import com.alibaba.fastjson.JSON;
 import com.intellif.common.Constants;
 import com.intellif.feign.Message;
 import com.intellif.remoting.RemotingException;
@@ -116,6 +117,7 @@ public class NettyClient {
                     }
                 } finally {
                     NettyClient.this.channel = newChannel;
+                    logger.info("Netty client connected to server: " + NetUtils.toAddressString((InetSocketAddress) channel.remoteAddress()));
                 }
                 //TODO: this channel is null, 处理空指针异常
             } else if (future.cause() != null) {
@@ -152,7 +154,7 @@ public class NettyClient {
             doConnect();
         }
         Channel channel = getChannel();
-        channel.writeAndFlush(message);
+        channel.writeAndFlush(JSON.toJSONString(message));
         CountDownLatch latch = new CountDownLatch(1);
         handler.setLatch(message.getUuid(), latch); //把latch设置到handler里面，方便在handler中获取到结果时通知这边停止等待
         try {
