@@ -65,9 +65,9 @@ public class Test {
             }
         };
 
-        NettyServer nettyServer = new NettyServer(serverHandler);
-        NettyClient nettyClient1 = new NettyClient(clientHandler);
-        NettyClient nettyClient2 = new NettyClient(clientHandler);
+//        NettyServer nettyServer = new NettyServer(9090, serverHandler);
+        NettyClient nettyClient1 = new NettyClient("localhost", 9090, clientHandler);
+        NettyClient nettyClient2 = new NettyClient("localhost", 9090, clientHandler);
         nettyClient1.send("The rain is down", false);
         nettyClient2.send("The moon is beautiful", false);
 

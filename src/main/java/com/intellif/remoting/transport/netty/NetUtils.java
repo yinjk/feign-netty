@@ -20,9 +20,6 @@ public abstract class NetUtils {
 
     public static final String LOCALHOST = "127.0.0.1";
     public static final String ANYHOST = "0.0.0.0";
-    private static final int RND_PORT_START = 30000;
-
-    private static final int RND_PORT_RANGE = 10000;
 
     private static final Pattern ADDRESS_PATTERN = Pattern.compile("^\\d{1,3}(\\.\\d{1,3}){3}\\:\\d{1,5}$");
     private static final Pattern LOCAL_IP_PATTERN = Pattern.compile("127(\\.\\d{1,3}){3}$");

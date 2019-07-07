@@ -61,8 +61,11 @@ public class NettyServer implements Server {
 
     private NettyChannelHandler handler;
 
-    public NettyServer(NettyChannelHandler handler) throws Throwable {
+    private int port;
+
+    public NettyServer(final int port, final NettyChannelHandler handler) throws Throwable {
         this.handler = handler;
+        this.port = port;
         doOpen();
     }
 
@@ -95,7 +98,7 @@ public class NettyServer implements Server {
                     }
                 });
         // bind
-        ChannelFuture channelFuture = bootstrap.bind(new InetSocketAddress(9090));
+        ChannelFuture channelFuture = bootstrap.bind(new InetSocketAddress(port));
         channelFuture.syncUninterruptibly();
         channel = channelFuture.channel();
     }

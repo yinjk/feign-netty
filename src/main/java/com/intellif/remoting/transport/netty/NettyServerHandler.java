@@ -1,6 +1,5 @@
 package com.intellif.remoting.transport.netty;
 
-import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.handler.timeout.IdleStateEvent;
 

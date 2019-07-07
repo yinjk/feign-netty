@@ -17,12 +17,15 @@
 package com.intellif.remoting.transport.netty;
 
 import com.intellif.common.Constants;
+import com.intellif.feign.Message;
 import com.intellif.remoting.RemotingException;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
@@ -33,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -50,8 +54,14 @@ public class NettyClient {
 
     private NettyChannelHandler handler;
 
-    public NettyClient(final NettyChannelHandler handler) throws Throwable {
+    private String host; //  [ip | hostname]
+
+    private int port; // port
+
+    public NettyClient(final String host, final int port, final NettyChannelHandler handler) throws Throwable {
         this.handler = handler;
+        this.host = host;
+        this.port = port;
         doOpen();
         doConnect();
     }
@@ -85,7 +95,7 @@ public class NettyClient {
 
     protected void doConnect() throws RemotingException {
         long start = System.currentTimeMillis();
-        ChannelFuture future = bootstrap.connect(new InetSocketAddress("DESKTOP-GMIJQNG", 9090));
+        ChannelFuture future = bootstrap.connect(new InetSocketAddress(host, port));
         try {
             boolean ret = future.awaitUninterruptibly(3000, TimeUnit.MILLISECONDS);
 
@@ -107,6 +117,7 @@ public class NettyClient {
                 } finally {
                     NettyClient.this.channel = newChannel;
                 }
+                //TODO: this channel is null, 处理空指针异常
             } else if (future.cause() != null) {
                 throw new RemotingException(this.channel, "client(url: ) failed to connect to server "
                         + channel.remoteAddress() + ", error message is:" + future.cause().getMessage(), future.cause());
@@ -133,6 +144,29 @@ public class NettyClient {
             throw new RemotingException(this.channel, "message can not send, because channel is closed . url:" + NetUtils.toAddressString((InetSocketAddress) channel.remoteAddress()));
         }
         channel.writeAndFlush(message);
+    }
+
+    public Object sendSync(Message message, long timeout, TimeUnit unit) throws RemotingException {
+        if (!isConnected()) {
+            System.out.println("reconnect");
+            doConnect();
+        }
+        Channel channel = getChannel();
+        channel.writeAndFlush(message);
+        CountDownLatch latch = new CountDownLatch(1);
+        handler.setLatch(message.getUuid(), latch); //把latch设置到handler里面，方便在handler中获取到结果时通知这边停止等待
+        try {
+            if (latch.await(timeout, unit)) { //在超时之前成功返回
+                return handler.getResult(message.getUuid());
+            }
+
+        } catch (InterruptedException e) {
+            logger.error(e.getMessage());
+            throw new RemotingException(channel, "the request is interrupted!");
+        }
+        //TODO: 处理超时的情况
+        //请求超时，直接抛异常
+        throw new RemotingException(channel, "请求超时！");
     }
 
     public boolean isConnected() {

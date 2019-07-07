@@ -1,0 +1,57 @@
+package com.intellif.feign;
+
+import com.intellif.listener.ServiceRunListener;
+import com.intellif.remoting.RemotingException;
+import feign.Client;
+import feign.Request;
+import feign.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+public class NettyClient implements Client {
+
+    /** logger */
+    private static final Logger log = LoggerFactory.getLogger(NettyClient.class);
+
+    private int timeout = 10;
+
+    @Override
+    public Response execute(Request request, Request.Options options) throws IOException {
+        String url = request.url();
+        URI uri = URI.create(url);
+        String remoteService = uri.getHost() + ":" + uri.getPort();
+        com.intellif.remoting.transport.netty.NettyClient nettyClient = ServiceRunListener.nettyClientMap.get(remoteService);
+        Message result = null;
+        try {
+            result = (Message) nettyClient.sendSync(new Message(UUID.randomUUID().toString(), "你收到消息了吗？"), timeout, TimeUnit.SECONDS);
+        } catch (RemotingException e) {
+            //TODO: 处理异常
+            log.error(e.getMessage());
+            e.printStackTrace();
+        }
+        if (null != result) {
+            System.out.println(result.getData());
+        }
+        System.out.println(url);
+        Map<String, Collection<String>> headers = new LinkedHashMap<>();
+        List<String> contentType = Arrays.asList("application/json", "charset=UTF-8");
+        headers.put("Content-Type", contentType);
+        String body = "{ \"name\": \"sweet\", \"sex\": \"男\", \"age\": 18 }";
+        return Response.builder()
+                .status(200)
+                .reason("the reason is no reason")
+                .headers(headers)
+                .body(body, Charset.forName("UTF-8"))
+                .build();
+    }
+
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
+    }
+}
