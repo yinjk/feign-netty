@@ -2,8 +2,8 @@ package com.intellif.listener;
 
 import com.intellif.feign.NettyClientChannelHandler;
 import com.intellif.feign.NettyServerChannelHandler;
-import com.intellif.remoting.transport.netty.NettyClient;
-import com.intellif.remoting.transport.netty.NettyServer;
+import com.intellif.remoting.netty.NettyClient;
+import com.intellif.remoting.netty.NettyServer;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;

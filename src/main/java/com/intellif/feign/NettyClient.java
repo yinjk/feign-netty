@@ -28,7 +28,7 @@ public class NettyClient implements Client {
         String url = request.url();
         URI uri = URI.create(url);
         String remoteService = uri.getHost() + ":" + uri.getPort();
-        com.intellif.remoting.transport.netty.NettyClient nettyClient = ServiceRunListener.nettyClientMap.get(remoteService);
+        com.intellif.remoting.netty.NettyClient nettyClient = ServiceRunListener.nettyClientMap.get(remoteService);
         Message result = null;
         try {
             //TODO: create transfer data(can using original request)

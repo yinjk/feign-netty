@@ -2,8 +2,8 @@ package com.intellif.feign;
 
 import com.alibaba.fastjson.JSON;
 import com.intellif.remoting.RemotingException;
-import com.intellif.remoting.transport.netty.AbstractNettyChannelHandler;
-import com.intellif.remoting.transport.netty.NetUtils;
+import com.intellif.remoting.netty.AbstractNettyChannelHandler;
+import com.intellif.remoting.netty.NetUtils;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intellif.remoting.transport.netty;
+package com.intellif.remoting.netty;
 
 
 import com.intellif.common.Constants;

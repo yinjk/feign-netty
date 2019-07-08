@@ -1,4 +1,4 @@
-package com.intellif.remoting.transport.netty;
+package com.intellif.remoting.netty;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-package com.intellif.remoting.transport.netty;
+package com.intellif.remoting.netty;
 
 import com.intellif.remoting.RemotingException;
 import io.netty.channel.Channel;

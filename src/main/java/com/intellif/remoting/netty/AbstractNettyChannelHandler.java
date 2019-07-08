@@ -1,4 +1,4 @@
-package com.intellif.remoting.transport.netty;
+package com.intellif.remoting.netty;
 
 import com.intellif.feign.Message;
 import com.intellif.remoting.RemotingException;
