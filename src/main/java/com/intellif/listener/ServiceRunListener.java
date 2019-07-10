@@ -5,6 +5,8 @@ import com.intellif.feign.NettyServerChannelHandler;
 import com.intellif.remoting.netty.NettyClient;
 import com.intellif.remoting.netty.NettyServer;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;
 import org.springframework.cloud.client.ServiceInstance;
@@ -13,7 +15,10 @@ import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.web.servlet.DispatcherServlet;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,6 +40,12 @@ public class ServiceRunListener implements SpringApplicationRunListener {
 
     public static volatile NettyServer nettyServer;
 
+    /**
+     * logger
+     */
+    private static final Logger log = LoggerFactory.getLogger(ServiceRunListener.class);
+
+
     public ServiceRunListener(SpringApplication application, String[] args) {
         this.application = application;
         this.args = args;
@@ -43,7 +54,7 @@ public class ServiceRunListener implements SpringApplicationRunListener {
     private AtomicBoolean inited = new AtomicBoolean(false);
 
     private void connectRemote(final ApplicationContext context) throws Throwable {
-        nettyServer = startNettyServer(); //启动netty服务端
+        nettyServer = startNettyServer(context); //启动netty服务端
         Map<String, Object> beansWithAnnotation = context.getBeansWithAnnotation(FeignClient.class);
         for (Map.Entry<String, Object> entry : beansWithAnnotation.entrySet()) {
             Object obj = entry.getValue();
@@ -73,9 +84,10 @@ public class ServiceRunListener implements SpringApplicationRunListener {
         return "";
     }
 
-    private NettyServer startNettyServer() throws Throwable {
+    private NettyServer startNettyServer(ApplicationContext context) throws Throwable {
         //TODO: 1.处理这个异常， 2. 考虑将端口可配
-        return new NettyServer(20800, new NettyServerChannelHandler());
+        initServer(context);
+        return new NettyServer(20801, new NettyServerChannelHandler(context.getBean(DispatcherServlet.class)));
     }
 
     private void doConnect(List<ServiceInstance> serviceInstances) throws Throwable {
@@ -89,6 +101,15 @@ public class ServiceRunListener implements SpringApplicationRunListener {
     private List<ServiceInstance> searchInDiscovery(ApplicationContext context, String serviceName) {
         DiscoveryClient discoveryClient = context.getBean(DiscoveryClient.class);
         return discoveryClient.getInstances(serviceName);
+    }
+
+    private void initServer(ApplicationContext context) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Method onRefresh = null;
+        DispatcherServlet dispatcherServlet = context.getBean(DispatcherServlet.class);
+        onRefresh = DispatcherServlet.class.getDeclaredMethod("onRefresh", ApplicationContext.class);
+        onRefresh.setAccessible(true);
+        onRefresh.invoke(dispatcherServlet, context);
+
     }
 
 

@@ -29,17 +29,18 @@ public class NettyClient implements Client {
         URI uri = URI.create(url);
         String remoteService = uri.getHost() + ":" + uri.getPort();
         com.intellif.remoting.netty.NettyClient nettyClient = ServiceRunListener.nettyClientMap.get(remoteService);
-        Message result = null;
+        ResponseMessage result = null;
         try {
             //TODO: create transfer data(can using original request)
-            result = (Message) nettyClient.sendSync(new Message(UUID.randomUUID().toString(), "你收到消息了吗？"), timeout, TimeUnit.SECONDS);
+            result = (ResponseMessage) nettyClient.sendSync(new RequestMessage(UUID.randomUUID().toString(), request), timeout, TimeUnit.SECONDS);
         } catch (RemotingException e) {
             //TODO: hand this error
             log.error(e.getMessage());
-            e.printStackTrace();
         }
         if (null != result) {
             //TODO: hand this result
+            Response response = result.getData().toFeignResponse();
+            return response;
         }
         Map<String, Collection<String>> headers = new LinkedHashMap<>();
         List<String> contentType = Arrays.asList("application/json", "charset=UTF-8");

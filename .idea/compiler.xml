@@ -8,16 +8,17 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="feign-netty" />
+        <module name="provider" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="1.8">
       <module name="feign-netty" target="1.8" />
-      <module name="privider" target="1.8" />
+      <module name="provider" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="privider" options="" />
+      <module name="provider" options="" />
     </option>
   </component>
 </project>

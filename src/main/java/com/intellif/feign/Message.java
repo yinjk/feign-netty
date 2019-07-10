@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Message {
+public class Message<T> {
 
-    private String uuid;
+    protected String uuid;
 
-    private Object data;
+    protected T data;
 }

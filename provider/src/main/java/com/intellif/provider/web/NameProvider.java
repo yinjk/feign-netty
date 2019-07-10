@@ -1,6 +1,6 @@
-package com.intellif.privider.web;
+package com.intellif.provider.web;
 
-import com.intellif.privider.bean.User;
+import com.intellif.provider.bean.User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 

@@ -1,4 +1,4 @@
-package com.intellif.privider.bean;
+package com.intellif.provider.bean;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

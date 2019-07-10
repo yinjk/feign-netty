@@ -46,6 +46,7 @@ public class NettyFeignAutoConfiguration {
         @ConditionalOnMissingBean(Client.class)
         public Client feignClient(CachingSpringLoadBalancerFactory cachingFactory,
                                   SpringClientFactory clientFactory) {
+            //使用负载均衡的方式
             return new LoadBalancerFeignClient(new NettyClient(), cachingFactory, clientFactory);
         }
 

@@ -12,9 +12,6 @@ public class HelloController {
 
     @GetMapping("/test/hello")
     public User hello() {
-        for (int i = 0; i < 1000; i++) {
-            remoteService.user();
-        }
         return remoteService.user();
     }
 }

@@ -19,6 +19,7 @@ package com.intellif.remoting.netty;
 import com.alibaba.fastjson.JSON;
 import com.intellif.common.Constants;
 import com.intellif.feign.Message;
+import com.intellif.feign.RequestMessage;
 import com.intellif.remoting.RemotingException;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -148,18 +149,18 @@ public class NettyClient {
         channel.writeAndFlush(message);
     }
 
-    public Object sendSync(Message message, long timeout, TimeUnit unit) throws RemotingException {
+    public Object sendSync(RequestMessage request, long timeout, TimeUnit unit) throws RemotingException {
         if (!isConnected()) {
             System.out.println("reconnect");
             doConnect();
         }
         Channel channel = getChannel();
-        channel.writeAndFlush(JSON.toJSONString(message));
+        channel.writeAndFlush(JSON.toJSONString(request));
         CountDownLatch latch = new CountDownLatch(1);
-        handler.setLatch(message.getUuid(), latch); //把latch设置到handler里面，方便在handler中获取到结果时通知这边停止等待
+        handler.setLatch(request.getUuid(), latch); //把latch设置到handler里面，方便在handler中获取到结果时通知这边停止等待
         try {
             if (latch.await(timeout, unit)) { //在超时之前成功返回
-                return handler.getResult(message.getUuid());
+                return handler.getResult(request.getUuid());
             }
 
         } catch (InterruptedException e) {

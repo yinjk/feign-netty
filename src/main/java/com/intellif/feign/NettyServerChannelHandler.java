@@ -1,17 +1,20 @@
 package com.intellif.feign;
 
 import com.alibaba.fastjson.JSON;
+import com.intellif.mockhttp.MockHttpClient;
 import com.intellif.remoting.RemotingException;
 import com.intellif.remoting.netty.AbstractNettyChannelHandler;
 import com.intellif.remoting.netty.NetUtils;
+import feign.Response;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.servlet.DispatcherServlet;
 
 import java.net.InetSocketAddress;
 
 /**
- * author: yinjk
+ * @author inori
  */
 public class NettyServerChannelHandler extends AbstractNettyChannelHandler {
 
@@ -19,6 +22,13 @@ public class NettyServerChannelHandler extends AbstractNettyChannelHandler {
      * logger
      */
     private static final Logger log = LoggerFactory.getLogger(NettyServerChannelHandler.class);
+
+    private MockHttpClient mockHttpClient;
+
+
+    public NettyServerChannelHandler(DispatcherServlet dispatcherServlet) {
+        this.mockHttpClient = new MockHttpClient(dispatcherServlet);
+    }
 
     @Override
     public void connected(Channel channel) throws RemotingException {
@@ -37,8 +47,20 @@ public class NettyServerChannelHandler extends AbstractNettyChannelHandler {
 
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
-        Message req = JSON.parseObject((String) message, Message.class);
-        channel.writeAndFlush(JSON.toJSONString(new Message(req.getUuid(), "i'm ok!"))); //回复消息
+        RequestMessage req = JSON.parseObject((String) message, RequestMessage.class);
+        System.out.println(req.getData());
+        TransferResponse response;
+        try {
+            response = mockHttpClient.execute(req.getData().toFeignRequest());
+        } catch (Exception e) {
+            //TODO: 处理这个异常
+            log.error(e.getMessage());
+            throw new RemotingException(channel, e.getMessage());
+        }
+        // 把消息返回给客户端
+        ResponseMessage responseMessage = new ResponseMessage(req.getUuid(), response);
+        String responseJson = JSON.toJSONString(responseMessage);
+        channel.writeAndFlush(responseJson); //回复消息
     }
 
     @Override
