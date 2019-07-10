@@ -38,9 +38,7 @@ public class NettyClient implements Client {
             log.error(e.getMessage());
         }
         if (null != result) {
-            //TODO: hand this result
-            Response response = result.getData().toFeignResponse();
-            return response;
+            return result.getData().toFeignResponse();
         }
         Map<String, Collection<String>> headers = new LinkedHashMap<>();
         List<String> contentType = Arrays.asList("application/json", "charset=UTF-8");
