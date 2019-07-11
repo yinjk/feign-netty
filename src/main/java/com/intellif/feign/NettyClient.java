@@ -5,6 +5,7 @@ import com.intellif.remoting.RemotingException;
 import feign.Client;
 import feign.Request;
 import feign.Response;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,29 +31,27 @@ public class NettyClient implements Client {
         String remoteService = uri.getHost() + ":" + uri.getPort();
         com.intellif.remoting.netty.NettyClient nettyClient = ServiceRunListener.nettyClientMap.get(remoteService);
         if (nettyClient == null) { //没有拿到客户端，应该去重新获取
-//            ServiceRunListener.nettyClientMap.put();
-            //TODO: 重新去获取
+            try {
+                nettyClient = getNettyClient(uri);
+                ServiceRunListener.nettyClientMap.putIfAbsent(remoteService, nettyClient);
+            } catch (Throwable throwable) {// 链接失败，考虑切换回http的方式
+                //TODO: 切换回http方式
+                log.warn("connect netty server failed, using original http client");
+                throw new IOException(throwable.getMessage());
+            }
         }
         ResponseMessage result = null;
         try {
             result = (ResponseMessage) nettyClient.sendSync(new RequestMessage(UUID.randomUUID().toString(), request), timeout, TimeUnit.SECONDS);
         } catch (RemotingException e) {
-            //TODO: hand this error
             log.error(e.getMessage());
+            throw new IOException(e.getMessage());
         }
-        if (null != result) {
-            return result.getData().toFeignResponse();
-        }
-        Map<String, Collection<String>> headers = new LinkedHashMap<>();
-        List<String> contentType = Arrays.asList("application/json", "charset=UTF-8");
-        headers.put("Content-Type", contentType);
-        String body = "{ \"name\": \"sweet\", \"sex\": \"男\", \"age\": 18 }";
-        return Response.builder()
-                .status(200)
-                .reason("the reason is no reason")
-                .headers(headers)
-                .body(body, Charset.forName("UTF-8"))
-                .build();
+        return result.getData().toFeignResponse();
+    }
+
+    public com.intellif.remoting.netty.NettyClient getNettyClient(URI uri) throws Throwable {
+        return new com.intellif.remoting.netty.NettyClient(uri.getHost(), uri.getPort(), new NettyClientChannelHandler());
     }
 
     public void setTimeout(int timeout) {

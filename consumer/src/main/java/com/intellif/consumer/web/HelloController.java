@@ -29,8 +29,8 @@ public class HelloController {
         return remoteService.hello(param);
     }
 
-    @RequestMapping(value = "/remote/form/data", method = RequestMethod.POST)
+    @GetMapping(value = "/remote/form/data")
     public String remoteFormData(String name) {
-        return remoteService.formData(name);
+        return remoteService.formData("张三");
     }
 }

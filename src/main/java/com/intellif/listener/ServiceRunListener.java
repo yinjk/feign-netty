@@ -123,7 +123,7 @@ public class ServiceRunListener implements SpringApplicationRunListener {
      * @param port
      * @return
      */
-    private int autoNettyPort(int port) {
+    public static int autoNettyPort(int port) {
         return port + 10000 > 30000 ? port + 123 : port + 10000;
     }
 
