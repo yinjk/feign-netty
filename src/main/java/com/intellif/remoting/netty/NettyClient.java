@@ -120,13 +120,12 @@ public class NettyClient {
                     NettyClient.this.channel = newChannel;
                     logger.info("Netty client connected to server: " + NetUtils.toAddressString((InetSocketAddress) channel.remoteAddress()));
                 }
-                //TODO: this channel is null, 处理空指针异常
             } else if (future.cause() != null) {
                 throw new RemotingException(this.channel, "client(url: ) failed to connect to server "
-                        + channel.remoteAddress() + ", error message is:" + future.cause().getMessage(), future.cause());
+                        + host + ":" + port + " , error message is:" + future.cause().getMessage(), future.cause());
             } else {
                 throw new RemotingException(this.channel, "client(url: ) failed to connect to server "
-                        + channel.remoteAddress() + " client-side timeout "
+                        + host + ":" + port + " client-side timeout "
                         + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start) + "ms) from netty client "
                         + NetUtils.getLocalHost());
             }

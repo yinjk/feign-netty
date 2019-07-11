@@ -3,7 +3,7 @@ package com.intellif.mockhttp;
 import com.intellif.feign.RequestMessage;
 import com.intellif.feign.TransferResponse;
 import feign.Request;
-import feign.Response;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -52,6 +52,27 @@ public class MockHttpClient {
         URI uri = URI.create(request.url());
         mockRequest.setRequestURI(uri.getPath());
         mockRequest.setServletPath(uri.getPath());
+        mockRequest.setQueryString(uri.getQuery());
+        if (!StringUtils.isBlank(uri.getQuery())) {
+            String[] parameters = uri.getQuery().split("&");
+            for (String parameter : parameters) {
+                if (StringUtils.isBlank(parameter)) {
+                    continue;
+                }
+                String[] param = parameter.split("=");
+                String key = param[0];
+                String value = "";
+                if (param.length >= 2) {
+                    StringBuilder builder = new StringBuilder();
+                    for (int i = 1; i < param.length; i++) {
+                        builder.append(param[i].trim()).append(",");
+                    }
+                    value = builder.substring(0, builder.lastIndexOf(","));
+                }
+                mockRequest.setParameter(key, value);
+            }
+        }
+        mockRequest.setPathInfo(uri.getQuery());
         mockRequest.setMethod(request.method());
         return mockRequest;
     }

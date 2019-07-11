@@ -29,9 +29,12 @@ public class NettyClient implements Client {
         URI uri = URI.create(url);
         String remoteService = uri.getHost() + ":" + uri.getPort();
         com.intellif.remoting.netty.NettyClient nettyClient = ServiceRunListener.nettyClientMap.get(remoteService);
+        if (nettyClient == null) { //没有拿到客户端，应该去重新获取
+//            ServiceRunListener.nettyClientMap.put();
+            //TODO: 重新去获取
+        }
         ResponseMessage result = null;
         try {
-            //TODO: create transfer data(can using original request)
             result = (ResponseMessage) nettyClient.sendSync(new RequestMessage(UUID.randomUUID().toString(), request), timeout, TimeUnit.SECONDS);
         } catch (RemotingException e) {
             //TODO: hand this error

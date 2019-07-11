@@ -13,4 +13,7 @@ spring:
   sleuth:
     sampler:
       percentage: 1.0
+feign:
+  netty:
+    port: 20800
 

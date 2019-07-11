@@ -15,17 +15,20 @@ import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.MapPropertySource;
 import org.springframework.web.servlet.DispatcherServlet;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * 监听
+ * 监听服务启动，在服务启动时启动netty服务器，并且去连接远程客户端
  *
  * @author inori
  * @create 2019-07-06 19:08
@@ -36,7 +39,7 @@ public class ServiceRunListener implements SpringApplicationRunListener {
 
     private final String[] args;
 
-    public static Map<String, NettyClient> nettyClientMap = new ConcurrentHashMap<>(); // ip:port, NettyClient
+    public static final Map<String, NettyClient> nettyClientMap = new ConcurrentHashMap<>(); // ip:port, NettyClient
 
     public static volatile NettyServer nettyServer;
 
@@ -87,20 +90,41 @@ public class ServiceRunListener implements SpringApplicationRunListener {
     private NettyServer startNettyServer(ApplicationContext context) throws Throwable {
         //TODO: 1.处理这个异常， 2. 考虑将端口可配
         initServer(context);
-        return new NettyServer(20801, new NettyServerChannelHandler(context.getBean(DispatcherServlet.class)));
+        Environment environment = context.getEnvironment();
+        String nettyPort = environment.getProperty("feign.netty.port");
+        if (StringUtils.isBlank(nettyPort)) {//没有配置netty port
+            // 根据统一算法自动生成nettyPort
+            int nettyPortInt = autoNettyPort(Integer.parseInt(environment.getProperty("server.port")));
+            nettyPort = String.valueOf(nettyPortInt);
+        }
+        return new NettyServer(Integer.parseInt(nettyPort), new NettyServerChannelHandler(context.getBean(DispatcherServlet.class)));
     }
 
     private void doConnect(List<ServiceInstance> serviceInstances) throws Throwable {
         for (ServiceInstance serviceInstance : serviceInstances) {
             String remoteService = serviceInstance.getHost() + ":" + serviceInstance.getPort();
+            String nettyPort = serviceInstance.getMetadata().get("netty-port");
+            if (StringUtils.isBlank(nettyPort)) { //如果没有将netty-port注册到注册中心，直接取server.port,将其加10000，如果大于30000，则加123
+                nettyPort = String.valueOf(autoNettyPort(serviceInstance.getPort()));
+            }
             //TODO 客户端连不上怎么办
-            nettyClientMap.putIfAbsent(remoteService, new NettyClient(serviceInstance.getHost(), 20800, new NettyClientChannelHandler()));
+            nettyClientMap.putIfAbsent(remoteService, new NettyClient(serviceInstance.getHost(), Integer.parseInt(nettyPort), new NettyClientChannelHandler()));
         }
     }
 
     private List<ServiceInstance> searchInDiscovery(ApplicationContext context, String serviceName) {
         DiscoveryClient discoveryClient = context.getBean(DiscoveryClient.class);
         return discoveryClient.getInstances(serviceName);
+    }
+
+    /**
+     * 按照一定算法，自动生成nettyPort
+     *
+     * @param port
+     * @return
+     */
+    private int autoNettyPort(int port) {
+        return port + 10000 > 30000 ? port + 123 : port + 10000;
     }
 
     private void initServer(ApplicationContext context) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
@@ -120,7 +144,30 @@ public class ServiceRunListener implements SpringApplicationRunListener {
 
     @Override
     public void environmentPrepared(ConfigurableEnvironment environment) {
-        //doing nothing...
+        String applicationName = environment.getProperty("spring.application.name");
+        if ("bootstrap".equals(applicationName)) {
+            return;
+        }
+        if (inited.get()) { //如果已经被初始化过了，直接跳过（确保只初始化一次）
+            return;
+        }
+        String nettyPort = environment.getProperty("feign.netty.port");
+        if (StringUtils.isBlank(nettyPort)) { //没有配置，直接跳过
+            return;
+        }
+        Map<String, Object> map = new HashMap<>();
+        // 尝试获取当前的注册中心
+        try {
+            Class.forName("org.springframework.cloud.netflix.eureka.EurekaInstanceConfigBean");
+            map.put("eureka.instance.metadata-map.netty-port", nettyPort);
+            MapPropertySource mapPropertySource = new MapPropertySource("netty-port", map);
+            environment.getPropertySources().addFirst(mapPropertySource);
+        } catch (ClassNotFoundException e) {
+            //没有该类，说明注册中心不是eureka，将feign.netty.port去掉
+            map.put("feign.netty.port", "");
+            environment.getPropertySources().addFirst(new MapPropertySource("netty-port", map));
+        }
+
     }
 
     @Override
@@ -143,6 +190,9 @@ public class ServiceRunListener implements SpringApplicationRunListener {
     public void finished(ConfigurableApplicationContext context, Throwable exception) {
         String applicationName = context.getEnvironment().getProperty("spring.application.name");
         if ("bootstrap".equals(applicationName)) {
+            return;
+        }
+        if (exception != null) { //SpringBoot启动失败了，这里什么都不做
             return;
         }
         if (inited.get()) { //如果已经被初始化过了，直接跳过（确保只初始化一次）

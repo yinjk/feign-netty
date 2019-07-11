@@ -53,7 +53,7 @@ public class RemotingException extends Exception {
     }
 
     public RemotingException(Channel channel, String message, Throwable cause) {
-        this(channel == null ? null :  (InetSocketAddress) channel.localAddress(), channel == null ? null :  (InetSocketAddress) channel.localAddress(),
+        this(channel == null ? null :  (InetSocketAddress) channel.localAddress(), channel == null ? null :  (InetSocketAddress) channel.remoteAddress(),
                 message, cause);
     }
 

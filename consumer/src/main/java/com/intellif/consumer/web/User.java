@@ -1,4 +1,4 @@
-package com.intellif.web;
+package com.intellif.consumer.web;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

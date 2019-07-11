@@ -167,48 +167,4 @@ public class NettyServer implements Server {
         return channel.isRegistered();
     }
 
-    @Override
-    public URL getUrl() {
-        return null;
-    }
-
-    @Override
-    public ChannelHandler getChannelHandler() {
-        return null;
-    }
-
-    @Override
-    public InetSocketAddress getLocalAddress() {
-        return null;
-    }
-
-    @Override
-    public void send(Object message) throws RemotingException {
-
-    }
-
-    @Override
-    public void send(Object message, boolean sent) throws RemotingException {
-
-    }
-
-    @Override
-    public void close() {
-
-    }
-
-    @Override
-    public void close(int timeout) {
-
-    }
-
-    @Override
-    public void startClose() {
-
-    }
-
-    @Override
-    public boolean isClosed() {
-        return false;
-    }
 }
