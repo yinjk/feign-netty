@@ -93,7 +93,7 @@ public class NettyServer implements Server {
                                 .addLast("encoder", new LengthFieldPrepender(8))
                                 .addLast("stringDecoder", new StringDecoder())
                                 .addLast("stringEncoder", new StringEncoder())
-                                .addLast("heartbeat", new IdleStateHandler(10, -1, -1, TimeUnit.SECONDS))
+                                .addLast("heartbeat", new IdleStateHandler(30, -1, -1, TimeUnit.SECONDS))
                                 .addLast("handler", nettyServerHandler);
                     }
                 });

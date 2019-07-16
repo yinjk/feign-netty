@@ -1,7 +1,7 @@
 package com.intellif.mockhttp;
 
-import com.intellif.feign.RequestMessage;
-import com.intellif.feign.TransferResponse;
+import com.intellif.feign.transfer.RequestMessage;
+import com.intellif.feign.transfer.TransferResponse;
 import feign.Request;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.mock.web.MockHttpServletRequest;

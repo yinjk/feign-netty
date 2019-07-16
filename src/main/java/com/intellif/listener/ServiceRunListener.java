@@ -39,6 +39,8 @@ public class ServiceRunListener implements SpringApplicationRunListener {
 
     private final String[] args;
 
+    private ConfigurableEnvironment environment;
+
     public static final Map<String, NettyClient> nettyClientMap = new ConcurrentHashMap<>(); // ip:port, NettyClient
 
     public static volatile NettyServer nettyServer;
@@ -136,7 +138,6 @@ public class ServiceRunListener implements SpringApplicationRunListener {
 
     }
 
-
     @Override
     public void starting() {
         //doing nothing...
@@ -149,6 +150,10 @@ public class ServiceRunListener implements SpringApplicationRunListener {
             return;
         }
         if (inited.get()) { //如果已经被初始化过了，直接跳过（确保只初始化一次）
+            return;
+        }
+        this.environment = environment;
+        if (Boolean.FALSE.toString().equals(environment.getProperty("feign.netty.enabled"))) { //关闭feign-netty
             return;
         }
         String nettyPort = environment.getProperty("feign.netty.port");
@@ -199,6 +204,9 @@ public class ServiceRunListener implements SpringApplicationRunListener {
             return;
         }
         inited.set(true);
+        if (Boolean.FALSE.toString().equals(environment.getProperty("feign.netty.enabled"))) { //关闭feign-netty
+            return;
+        }
         try {
             connectRemote(context);
         } catch (Throwable throwable) {

@@ -1,4 +1,4 @@
-package com.intellif.feign;
+package com.intellif.feign.transfer;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

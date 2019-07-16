@@ -1,6 +1,7 @@
 package com.intellif.feign;
 
 import com.alibaba.fastjson.JSON;
+import com.intellif.feign.transfer.ResponseMessage;
 import com.intellif.remoting.RemotingException;
 import com.intellif.remoting.netty.AbstractNettyChannelHandler;
 import com.intellif.remoting.netty.NetUtils;
@@ -14,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * author: yinjk
+ * @author yinjk
  */
 public class NettyClientChannelHandler extends AbstractNettyChannelHandler {
 
@@ -29,7 +30,6 @@ public class NettyClientChannelHandler extends AbstractNettyChannelHandler {
 
     @Override
     public void sent(Channel channel, Object message) throws RemotingException {
-        System.out.println(message);
         //doing nothing...
     }
 

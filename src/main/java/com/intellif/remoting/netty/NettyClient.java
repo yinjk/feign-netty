@@ -18,8 +18,7 @@ package com.intellif.remoting.netty;
 
 import com.alibaba.fastjson.JSON;
 import com.intellif.common.Constants;
-import com.intellif.feign.Message;
-import com.intellif.feign.RequestMessage;
+import com.intellif.feign.transfer.RequestMessage;
 import com.intellif.remoting.RemotingException;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -143,7 +142,7 @@ public class NettyClient {
         }
         Channel channel = getChannel();
         if (channel == null || !channel.isActive()) {
-            throw new RemotingException(this.channel, "message can not send, because channel is closed . url:" + NetUtils.toAddressString((InetSocketAddress) channel.remoteAddress()));
+            throw new RemotingException(this.channel, "message can not send, because channel is closed . url:[" + host + ":" + port + "]");
         }
         channel.writeAndFlush(message);
     }

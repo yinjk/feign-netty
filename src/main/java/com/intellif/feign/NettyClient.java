@@ -1,18 +1,18 @@
 package com.intellif.feign;
 
+import com.intellif.feign.transfer.RequestMessage;
+import com.intellif.feign.transfer.ResponseMessage;
 import com.intellif.listener.ServiceRunListener;
 import com.intellif.remoting.RemotingException;
 import feign.Client;
 import feign.Request;
 import feign.Response;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.Charset;
-import java.util.*;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class NettyClient implements Client {

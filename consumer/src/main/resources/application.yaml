@@ -6,5 +6,11 @@ server:
   port: 8003
 spring:
   application:
-    name: spring-cloud-feign-netty
+    name: spring-cloud-consumer
 
+feign:
+  netty:
+    enabled: true
+management:
+  security:
+    enabled: false

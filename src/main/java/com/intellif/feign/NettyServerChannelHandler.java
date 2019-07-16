@@ -1,16 +1,19 @@
 package com.intellif.feign;
 
 import com.alibaba.fastjson.JSON;
+import com.intellif.feign.transfer.RequestMessage;
+import com.intellif.feign.transfer.ResponseMessage;
+import com.intellif.feign.transfer.TransferResponse;
 import com.intellif.mockhttp.MockHttpClient;
 import com.intellif.remoting.RemotingException;
 import com.intellif.remoting.netty.AbstractNettyChannelHandler;
 import com.intellif.remoting.netty.NetUtils;
-import feign.Response;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.DispatcherServlet;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 
 /**
@@ -48,7 +51,6 @@ public class NettyServerChannelHandler extends AbstractNettyChannelHandler {
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
         RequestMessage req = JSON.parseObject((String) message, RequestMessage.class);
-        System.out.println(req.getData());
         TransferResponse response;
         try {
             response = mockHttpClient.execute(req.getData().toFeignRequest());
@@ -66,6 +68,9 @@ public class NettyServerChannelHandler extends AbstractNettyChannelHandler {
     @Override
     public void caught(Channel channel, Throwable exception) throws RemotingException {
         //TODO: hand this exception
-        NetUtils.toAddressString((InetSocketAddress) channel.remoteAddress());
+        if (exception instanceof IOException) {
+            String remoteService = NetUtils.toAddressString((InetSocketAddress) channel.remoteAddress());
+            log.info("the remote client close the current connection:[" + remoteService + "]");
+        }
     }
 }

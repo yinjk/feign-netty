@@ -1,10 +1,9 @@
 package com.intellif.consumer.web;
 
+import feign.Response;
 import org.springframework.cloud.netflix.feign.FeignClient;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -24,5 +23,10 @@ public interface RemoteService {
     @PostMapping("/form/data")
     String formData(@RequestParam("name") String name);
 
+    @PostMapping(value = "/post/json")
+    String postJson(@RequestParam("name") String name, @RequestBody User user);
+
+    @RequestMapping(value = "/downloadFile", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    Response downloadFile();
 
 }

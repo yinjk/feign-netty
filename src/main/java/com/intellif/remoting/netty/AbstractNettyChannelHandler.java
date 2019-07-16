@@ -1,6 +1,6 @@
 package com.intellif.remoting.netty;
 
-import com.intellif.feign.Message;
+import com.intellif.feign.transfer.Message;
 import com.intellif.remoting.RemotingException;
 import io.netty.channel.Channel;
 
