@@ -37,12 +37,12 @@ public class NettyServerChannelHandler extends AbstractNettyChannelHandler {
      */
     private static Map<String, Collection<String>> emptyHeaders = new HashMap<>(0);
 
-    private ThreadPoolExecutor executor;
-
     /**
      * logger
      */
     private static final Logger log = LoggerFactory.getLogger(NettyServerChannelHandler.class);
+
+    private ThreadPoolExecutor executor;
 
     private MockHttpClient mockHttpClient;
 

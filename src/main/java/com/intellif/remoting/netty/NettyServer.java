@@ -89,12 +89,14 @@ public class NettyServer implements Server {
                     @Override
                     protected void initChannel(NioSocketChannel ch) throws Exception {
                         ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
+                                //tcp 粘包、半包 编解码处理器
                                 .addLast("decoder", new LengthFieldBasedFrameDecoder(1024, 0, 8, 0, 8))
                                 .addLast("encoder", new LengthFieldPrepender(8))
                                 .addLast("stringDecoder", new StringDecoder())
                                 .addLast("stringEncoder", new StringEncoder())
-                                .addLast("heartbeat", new IdleStateHandler(30, -1, -1, TimeUnit.SECONDS))
+                                .addLast("heartbeat", new IdleStateHandler(60, -1, -1, TimeUnit.SECONDS))
                                 .addLast("handler", nettyServerHandler);
+                        ch.config().setAllowHalfClosure(true); //设置为true，当客户端强制关闭时，服务端能够捕获到远程主机强制关闭的错误
                     }
                 });
         // bind

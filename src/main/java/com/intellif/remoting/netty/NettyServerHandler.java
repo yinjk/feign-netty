@@ -1,7 +1,10 @@
 package com.intellif.remoting.netty;
 
 import io.netty.channel.*;
+import io.netty.channel.socket.ChannelInputShutdownEvent;
 import io.netty.handler.timeout.IdleStateEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -13,6 +16,12 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @ChannelHandler.Sharable
 public class NettyServerHandler extends ChannelDuplexHandler {
+
+    /**
+     * logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(NettyServerHandler.class);
+
 
     private final Map<String, Channel> channels = new ConcurrentHashMap<>(); // <ip:port, channel>
 
@@ -79,7 +88,8 @@ public class NettyServerHandler extends ChannelDuplexHandler {
         } finally {
             removeChannelIfDisconnected(channel);
         }
-        super.exceptionCaught(ctx,cause);
+        //捕获到异常不再向下传递.
+//        super.exceptionCaught(ctx, cause);
     }
 
     public Map<String, Channel> getChannels() {
@@ -95,6 +105,10 @@ public class NettyServerHandler extends ChannelDuplexHandler {
                 case READER_IDLE:
                     ctx.writeAndFlush("h"); //发送心跳
             }
+        } else if (evt instanceof ChannelInputShutdownEvent) {
+            Channel channel = ctx.channel();
+            LOGGER.error("The remote client {} force to closed connection", NetUtils.toAddressString((InetSocketAddress) channel.remoteAddress()));
+            channel.close();//远程主机强制关闭连接
         }
     }
 

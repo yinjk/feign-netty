@@ -1,0 +1,14 @@
+syntax = "proto2";
+//package transfer;
+
+message TransferRequestMessage {
+    required string uuid = 1;
+    required string method = 2;
+    optional string url = 3;
+    map<string, ListString> headers = 4;
+    optional bytes body = 5;
+    message ListString {
+        repeated string pojo = 1;
+    }
+}
+

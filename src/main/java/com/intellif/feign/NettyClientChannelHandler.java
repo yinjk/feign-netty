@@ -55,6 +55,7 @@ public class NettyClientChannelHandler extends AbstractNettyChannelHandler {
     @Override
     public void caught(Channel channel, Throwable exception) throws RemotingException {
         //TODO: hand this exception
+        log.error("");
         NetUtils.toAddressString((InetSocketAddress) channel.remoteAddress());
     }
 
