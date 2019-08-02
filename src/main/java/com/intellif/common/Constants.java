@@ -9,6 +9,10 @@ import java.util.regex.Pattern;
  */
 public class Constants {
 
+    public static final String DISCOVERY_METADATA_FEIGN_NETTY_PORT_KEY = "feign-netty-port";
+
+    public static final String FEIGN_NETTY_PORT_KEY = "feign.netty.port";
+
 
     public static final String PROVIDER = "provider";
 
@@ -620,4 +624,6 @@ public class Constants {
 
     public static final String MULTICAST = "multicast";
 
+    private Constants() { //禁止实例化
+    }
 }

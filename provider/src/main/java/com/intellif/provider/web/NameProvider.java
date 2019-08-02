@@ -36,7 +36,7 @@ public class NameProvider {
     public String postJson(@RequestParam("name") String name, @RequestBody User user) throws InterruptedException {
         System.out.println(name);
         System.out.println(user.toString());
-        Thread.sleep(300);
+        Thread.sleep(50); //模拟服务端的耗时操作 50ms
         return user.toString();
     }
 

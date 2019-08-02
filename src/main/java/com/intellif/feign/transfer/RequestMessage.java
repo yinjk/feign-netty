@@ -15,11 +15,6 @@ public class RequestMessage extends Message<TransferRequest> {
         super(uuid, toTransferRequest(data));
     }
 
-    public feign.Request getFeignRequest() {
-        TransferRequest req = this.getData();
-        return feign.Request.create(req.getMethod(), req.getUrl(), req.getHeaders(), req.getBody(), req.getCharset());
-    }
-
     public static TransferRequest toTransferRequest(feign.Request request) {
         return new TransferRequest(request.method(), request.url(), request.headers(), request.body(), request.charset());
     }

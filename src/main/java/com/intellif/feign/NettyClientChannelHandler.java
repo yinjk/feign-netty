@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -31,6 +32,7 @@ public class NettyClientChannelHandler extends AbstractNettyChannelHandler {
     @Override
     public void sent(Channel channel, Object message) throws RemotingException {
         //doing nothing...
+        System.out.println("sent message: "+ new Date().getTime());
     }
 
     @Override
@@ -40,8 +42,8 @@ public class NettyClientChannelHandler extends AbstractNettyChannelHandler {
             return;
         }
         String mJson = (String) o;
-        //TODO: 解析出错，因为response没有默认构造方法
         ResponseMessage result = JSON.parseObject(mJson, ResponseMessage.class);
+        System.out.printf("received response message %s: => %d \n", result.getUuid(), new Date().getTime());
         //将服务端返回的消息先暂时放在nettyResult缓存中，然后通知等待放去获取
         nettyResult.put(result.getUuid(), result);
         CountDownLatch latch = latchMap.remove(result.getUuid());

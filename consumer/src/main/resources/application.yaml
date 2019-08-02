@@ -1,16 +1,20 @@
 eureka:
   client:
     service-url:
+#      defaultZone: http://192.168.12.168:8761/eureka/
       defaultZone: http://localhost:8761/eureka/
 server:
   port: 8003
 spring:
   application:
     name: spring-cloud-consumer
-
 feign:
   netty:
     enabled: true
+    port: 20801
 management:
   security:
     enabled: false
+ribbon:
+  eager-load:
+    enabled: true

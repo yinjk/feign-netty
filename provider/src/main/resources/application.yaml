@@ -1,6 +1,7 @@
 eureka:
   client:
     service-url:
+#      defaultZone: http://192.168.12.168:8761/eureka/
       defaultZone: http://localhost:8761/eureka/
 server:
   port: 8005
@@ -16,4 +17,7 @@ spring:
 feign:
   netty:
     port: 20800
+ribbon:
+  eager-load:
+    enabled: true
 

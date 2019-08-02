@@ -10,6 +10,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,11 +28,19 @@ public class MockHttpClient {
         this.dispatcherServlet = new DispatcherServletWrap(dispatcherServlet);
     }
 
-
+    /**
+     * 调用dispatcherServlet执行request请求
+     *
+     * @param request 请求
+     * @return 基于传输的响应
+     * @throws Exception 任何异常
+     */
     public TransferResponse execute(Request request) throws Exception {
         MockHttpServletRequest mockReq = toMockRequest(request);
         MockHttpServletResponse mockRes = new MockHttpServletResponse();
+        System.out.printf("server begin real handle request: => %d \n", new Date().getTime());
         dispatcherServlet.doService(mockReq, mockRes);
+        System.out.printf("server end real handle request: => %d \n", new Date().getTime());
         Map<String, Collection<String>> headers = new HashMap<>();
         for (String name : mockRes.getHeaderNames()) {
             headers.put(name, mockRes.getHeaders(name));

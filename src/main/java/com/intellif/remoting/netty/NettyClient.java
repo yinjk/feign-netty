@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -148,6 +149,8 @@ public class NettyClient {
     }
 
     public Object sendSync(RequestMessage request, long timeout, TimeUnit unit) throws RemotingException {
+        Date start = new Date();
+        System.out.printf("start request %s : => %d \n", request.getUuid(), new Date().getTime());
         if (!isConnected()) {
             System.out.println("reconnect");
             doConnect();
@@ -157,7 +160,10 @@ public class NettyClient {
         CountDownLatch latch = new CountDownLatch(1);
         handler.setLatch(request.getUuid(), latch); //把latch设置到handler里面，方便在handler中获取到结果时通知这边停止等待
         try {
+            System.out.printf("begin await request %s : => %d \n", request.getUuid(), new Date().getTime());
             if (latch.await(timeout, unit)) { //在超时之前成功返回
+                System.out.printf("get request return %s : => %d \n", request.getUuid(), new Date().getTime());
+                System.out.println("get result " + (new Date().getTime() - start.getTime()));
                 return handler.getResult(request.getUuid());
             }
 

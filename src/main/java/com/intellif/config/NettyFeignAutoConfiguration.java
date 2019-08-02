@@ -5,10 +5,7 @@ import com.netflix.loadbalancer.ILoadBalancer;
 import feign.Client;
 import feign.Feign;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.cloud.netflix.feign.FeignAutoConfiguration;
 import org.springframework.cloud.netflix.feign.ribbon.CachingSpringLoadBalancerFactory;
 import org.springframework.cloud.netflix.feign.ribbon.LoadBalancerFeignClient;
@@ -17,6 +14,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
+ * 自动配置，参照{@link FeignAutoConfiguration}和{@link org.springframework.cloud.netflix.feign.ribbon.OkHttpFeignLoadBalancedConfiguration}代码，
+ * 自动配置feign-netty客户端，并且基于负载均很和非负载均衡的两种方式配置，特别需要注意的是，负载均衡默认使用的是原生的负载均很策略，从而做到了对代码完全无感知
+ *
  * @author yinjk
  */
 @Configuration

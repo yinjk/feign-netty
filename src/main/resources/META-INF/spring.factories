@@ -1,3 +1,4 @@
-org.springframework.boot.SpringApplicationRunListener=com.intellif.listener.ServiceRunListener
+org.springframework.boot.SpringApplicationRunListener=com.intellif.listener.NettyInitRunListener
+org.springframework.context.ApplicationListener=com.intellif.utils.ApplicationContextHolder
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.intellif.config.NettyFeignAutoConfiguration
 org.springframework.boot.CommandLineRunner=com.intellif.listener.CommandRunner

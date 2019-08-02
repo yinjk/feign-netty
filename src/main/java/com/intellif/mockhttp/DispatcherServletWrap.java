@@ -21,13 +21,19 @@ public class DispatcherServletWrap {
 
     public DispatcherServletWrap(DispatcherServlet dispatcherServlet) {
         this.dispatcherServlet = dispatcherServlet;
+        try {
+            this.doServiceMethod = this.dispatcherServlet.getClass().getDeclaredMethod("doService", HttpServletRequest.class, HttpServletResponse.class);
+            this.doServiceMethod.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            //doing nothing
+        }
     }
 
     public void doService(HttpServletRequest request, HttpServletResponse response) throws Exception {
         if (doServiceMethod == null) {
             this.doServiceMethod = this.dispatcherServlet.getClass().getDeclaredMethod("doService", HttpServletRequest.class, HttpServletResponse.class);
+            this.doServiceMethod.setAccessible(true);
         }
-        doServiceMethod.setAccessible(true);
         doServiceMethod.invoke(dispatcherServlet, request, response);
     }
 }

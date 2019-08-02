@@ -1,5 +1,6 @@
 package com.intellif.listener;
 
+import com.intellif.common.Constants;
 import com.intellif.feign.NettyClientChannelHandler;
 import com.intellif.feign.NettyServerChannelHandler;
 import com.intellif.remoting.netty.NettyClient;
@@ -33,7 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author inori
  * @create 2019-07-06 19:08
  */
-public class ServiceRunListener implements SpringApplicationRunListener {
+public class NettyInitRunListener implements SpringApplicationRunListener {
 
     private final SpringApplication application;
 
@@ -48,14 +49,17 @@ public class ServiceRunListener implements SpringApplicationRunListener {
     /**
      * logger
      */
-    private static final Logger log = LoggerFactory.getLogger(ServiceRunListener.class);
+    private static final Logger log = LoggerFactory.getLogger(NettyInitRunListener.class);
 
 
-    public ServiceRunListener(SpringApplication application, String[] args) {
+    public NettyInitRunListener(SpringApplication application, String[] args) {
         this.application = application;
         this.args = args;
     }
 
+    /**
+     * 确保该类只被初始化一次
+     */
     private AtomicBoolean inited = new AtomicBoolean(false);
 
     private void connectRemote(final ApplicationContext context) throws Throwable {
@@ -90,11 +94,12 @@ public class ServiceRunListener implements SpringApplicationRunListener {
     }
 
     private NettyServer startNettyServer(ApplicationContext context) throws Throwable {
-        //TODO: 1.处理这个异常， 2. 考虑将端口可配
         initServer(context);
         Environment environment = context.getEnvironment();
-        String nettyPort = environment.getProperty("feign.netty.port");
-        if (StringUtils.isBlank(nettyPort)) {//没有配置netty port
+        DiscoveryClient discoveryClient = context.getBean(DiscoveryClient.class);
+        ServiceInstance localServiceInstance = discoveryClient.getLocalServiceInstance(); //获取当前服务信息
+        String nettyPort = localServiceInstance.getMetadata().get(Constants.DISCOVERY_METADATA_FEIGN_NETTY_PORT_KEY);
+        if (nettyPort == null || StringUtils.isBlank(nettyPort)) {//没有配置netty port
             // 根据统一算法自动生成nettyPort
             int nettyPortInt = autoNettyPort(Integer.parseInt(environment.getProperty("server.port")));
             nettyPort = String.valueOf(nettyPortInt);
@@ -105,7 +110,7 @@ public class ServiceRunListener implements SpringApplicationRunListener {
     private void doConnect(List<ServiceInstance> serviceInstances) throws Throwable {
         for (ServiceInstance serviceInstance : serviceInstances) {
             String remoteService = serviceInstance.getHost() + ":" + serviceInstance.getPort();
-            String nettyPort = serviceInstance.getMetadata().get("netty-port");
+            String nettyPort = serviceInstance.getMetadata().get(Constants.DISCOVERY_METADATA_FEIGN_NETTY_PORT_KEY);
             if (StringUtils.isBlank(nettyPort)) { //如果没有将netty-port注册到注册中心，直接取server.port,将其加10000，如果大于30000，则加123
                 nettyPort = String.valueOf(autoNettyPort(serviceInstance.getPort()));
             }
@@ -122,13 +127,21 @@ public class ServiceRunListener implements SpringApplicationRunListener {
     /**
      * 按照一定算法，自动生成nettyPort
      *
-     * @param port
-     * @return
+     * @param port http服务器的端口
+     * @return 根据http服务器端口自动生成的netty服务器端口
      */
     public static int autoNettyPort(int port) {
         return port + 10000 > 30000 ? port + 123 : port + 10000;
     }
 
+    /**
+     * 手动刷新DispatcherServlet，以保证第一次调用可以正确的处理
+     *
+     * @param context spring上下文
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     */
     private void initServer(ApplicationContext context) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Method onRefresh = null;
         DispatcherServlet dispatcherServlet = context.getBean(DispatcherServlet.class);
@@ -156,7 +169,7 @@ public class ServiceRunListener implements SpringApplicationRunListener {
         if (Boolean.FALSE.toString().equals(environment.getProperty("feign.netty.enabled"))) { //关闭feign-netty
             return;
         }
-        String nettyPort = environment.getProperty("feign.netty.port");
+        String nettyPort = environment.getProperty(Constants.FEIGN_NETTY_PORT_KEY);
         if (StringUtils.isBlank(nettyPort)) { //没有配置，直接跳过
             return;
         }
@@ -164,13 +177,13 @@ public class ServiceRunListener implements SpringApplicationRunListener {
         // 尝试获取当前的注册中心
         try {
             Class.forName("org.springframework.cloud.netflix.eureka.EurekaInstanceConfigBean");
-            map.put("eureka.instance.metadata-map.netty-port", nettyPort);
-            MapPropertySource mapPropertySource = new MapPropertySource("netty-port", map);
+            map.put("eureka.instance.metadata-map." + Constants.DISCOVERY_METADATA_FEIGN_NETTY_PORT_KEY, nettyPort);
+            MapPropertySource mapPropertySource = new MapPropertySource(Constants.DISCOVERY_METADATA_FEIGN_NETTY_PORT_KEY, map);
             environment.getPropertySources().addFirst(mapPropertySource);
         } catch (ClassNotFoundException e) {
             //没有该类，说明注册中心不是eureka，将feign.netty.port去掉
-            map.put("feign.netty.port", "");
-            environment.getPropertySources().addFirst(new MapPropertySource("netty-port", map));
+            map.put(Constants.FEIGN_NETTY_PORT_KEY, "");
+            environment.getPropertySources().addFirst(new MapPropertySource(Constants.DISCOVERY_METADATA_FEIGN_NETTY_PORT_KEY, map));
         }
 
     }
@@ -210,8 +223,7 @@ public class ServiceRunListener implements SpringApplicationRunListener {
         try {
             connectRemote(context);
         } catch (Throwable throwable) {
-            //TODO: 处理这个异常
-            throwable.printStackTrace();
+            log.error("Start netty server failed, an error occurred while starting the server :" + throwable.getMessage());
         }
     }
 }
