@@ -2,8 +2,8 @@ package com.intellif.feign;
 
 import com.intellif.common.Constants;
 import com.intellif.discover.DiscoverClientProvider;
-import com.intellif.feign.transfer.RequestMessage;
-import com.intellif.feign.transfer.ResponseMessage;
+import com.intellif.feign.transfer.TransferRequest;
+import com.intellif.feign.transfer.TransferResponse;
 import com.intellif.listener.NettyInitRunListener;
 import com.intellif.remoting.RemotingException;
 import feign.Client;
@@ -60,14 +60,14 @@ public class NettyClient implements Client {
                 return httpClient.execute(request, options);
             }
         }
-        ResponseMessage result = null;
+        TransferResponse result = null;
         try {
-            result = (ResponseMessage) nettyClient.sendSync(new RequestMessage(UUID.randomUUID().toString(), request), options.readTimeoutMillis(), TimeUnit.MILLISECONDS);
+            result = (TransferResponse) nettyClient.sendSync(TransferRequest.create(UUID.randomUUID().toString(), request), options.readTimeoutMillis(), TimeUnit.MILLISECONDS);
         } catch (RemotingException e) {
             log.error(e.getMessage());
             throw new IOException(e.getMessage());
         }
-        Response response = result.getData().toFeignResponse();
+        Response response = result.toFeignResponse();
 //        System.out.println("return time: " + new Date().getTime());
         System.out.println("=================+> get result: " + (new Date().getTime() - start.getTime()));
         return response;
@@ -75,7 +75,7 @@ public class NettyClient implements Client {
 
     /**
      * 根据请求的uri，主动尝试获取netty长连接，通过discovery客户端去轮询当前注册中心中的所有服务，找到匹配的那个,
-     * （因为会遍历一遍当前所有服务，当服务数量太多时性能会很差，可以考虑更高性能的方式，比如ribbon的ServerList或其他思路）
+     * （因为会遍历一遍当前所有服务，当服务数量太多时性能会很差，可以考虑更高性能的方式，比如使用ribbon的ServerList或其他思路）
      *
      * @param uri 请求的uri
      * @return 建立好的netty长连接

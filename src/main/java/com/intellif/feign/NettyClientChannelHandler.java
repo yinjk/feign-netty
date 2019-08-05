@@ -1,7 +1,7 @@
 package com.intellif.feign;
 
 import com.alibaba.fastjson.JSON;
-import com.intellif.feign.transfer.ResponseMessage;
+import com.intellif.feign.transfer.TransferResponse;
 import com.intellif.remoting.RemotingException;
 import com.intellif.remoting.netty.AbstractNettyChannelHandler;
 import com.intellif.remoting.netty.NetUtils;
@@ -20,7 +20,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public class NettyClientChannelHandler extends AbstractNettyChannelHandler {
 
-    private Map<String, ResponseMessage> nettyResult = new ConcurrentHashMap<>(); // uuid : result [存放同步消息的返回]
+    private Map<String, TransferResponse> nettyResult = new ConcurrentHashMap<>(); // uuid : result [存放同步消息的返回]
 
     private Map<String, CountDownLatch> latchMap = new ConcurrentHashMap<>(); // uuid : latch
 
@@ -42,7 +42,7 @@ public class NettyClientChannelHandler extends AbstractNettyChannelHandler {
             return;
         }
         String mJson = (String) o;
-        ResponseMessage result = JSON.parseObject(mJson, ResponseMessage.class);
+        TransferResponse result = JSON.parseObject(mJson, TransferResponse.class);
         System.out.printf("received response message %s: => %d \n", result.getUuid(), new Date().getTime());
         //将服务端返回的消息先暂时放在nettyResult缓存中，然后通知等待放去获取
         nettyResult.put(result.getUuid(), result);
@@ -55,8 +55,7 @@ public class NettyClientChannelHandler extends AbstractNettyChannelHandler {
     @Override
     public void caught(Channel channel, Throwable exception) throws RemotingException {
         //TODO: hand this exception
-        log.error("");
-        NetUtils.toAddressString((InetSocketAddress) channel.remoteAddress());
+        log.error(NetUtils.toAddressString((InetSocketAddress) channel.remoteAddress()));
     }
 
     @Override

@@ -1,4 +1,5 @@
 syntax = "proto2";
+import "google/protobuf/any.proto";
 //package transfer;
 
 message TransferRequestMessage {

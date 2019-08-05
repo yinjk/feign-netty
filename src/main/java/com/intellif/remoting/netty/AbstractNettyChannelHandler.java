@@ -1,6 +1,6 @@
 package com.intellif.remoting.netty;
 
-import com.intellif.feign.transfer.Message;
+import com.intellif.feign.transfer.TransferResponse;
 import com.intellif.remoting.RemotingException;
 import io.netty.channel.Channel;
 
@@ -10,7 +10,7 @@ import java.util.concurrent.CountDownLatch;
 
 public abstract class AbstractNettyChannelHandler implements NettyChannelHandler {
 
-    private ThreadLocal<Message> nettyResult = new ThreadLocal<>();
+    private ThreadLocal<TransferResponse> nettyResult = new ThreadLocal<>();
 
     private Map<String, CountDownLatch> latchMap = new ConcurrentHashMap<>(); // uuid : latch
 

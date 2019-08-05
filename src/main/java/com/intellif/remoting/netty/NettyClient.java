@@ -18,7 +18,7 @@ package com.intellif.remoting.netty;
 
 import com.alibaba.fastjson.JSON;
 import com.intellif.common.Constants;
-import com.intellif.feign.transfer.RequestMessage;
+import com.intellif.feign.transfer.TransferRequest;
 import com.intellif.remoting.RemotingException;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -148,7 +148,7 @@ public class NettyClient {
         channel.writeAndFlush(message);
     }
 
-    public Object sendSync(RequestMessage request, long timeout, TimeUnit unit) throws RemotingException {
+    public Object sendSync(TransferRequest request, long timeout, TimeUnit unit) throws RemotingException {
         Date start = new Date();
         System.out.printf("start request %s : => %d \n", request.getUuid(), new Date().getTime());
         if (!isConnected()) {
@@ -171,7 +171,6 @@ public class NettyClient {
             logger.error(e.getMessage());
             throw new RemotingException(channel, "the request is interrupted!");
         }
-        //TODO: 处理超时的情况
         //请求超时，直接抛异常
         throw new RemotingException(channel, "请求超时！");
     }
