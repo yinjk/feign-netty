@@ -37,9 +37,7 @@ public class MockHttpClient {
     public TransferResponse execute(TransferRequest request) throws Exception {
         MockHttpServletRequest mockReq = toMockHttpRequest(request);
         MockHttpServletResponse mockRes = new MockHttpServletResponse();
-        System.out.printf("server begin real handle request: => %d \n", new Date().getTime());
         dispatcherServlet.doService(mockReq, mockRes);
-        System.out.printf("server end real handle request: => %d \n", new Date().getTime());
         Map<String, Collection<String>> headers = new HashMap<>();
         for (String name : mockRes.getHeaderNames()) {
             headers.put(name, mockRes.getHeaders(name));

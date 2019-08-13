@@ -1,6 +1,6 @@
 package com.intellif.config;
 
-import com.intellif.feign.NettyClient;
+import com.intellif.feign.FeignNettyClient;
 import com.netflix.loadbalancer.ILoadBalancer;
 import feign.Client;
 import feign.Feign;
@@ -33,12 +33,12 @@ public class NettyFeignAutoConfiguration {
         @ConditionalOnMissingBean(Client.class)
         public Client feignClient() {
             //这里使用我们创建的netty客户端
-            return new NettyClient();
+            return new FeignNettyClient();
         }
     }
 
     @Configuration
-    @ConditionalOnClass({ILoadBalancer.class, NettyClient.class})
+    @ConditionalOnClass({ILoadBalancer.class, FeignNettyClient.class})
     @ConditionalOnProperty(value = "feign.netty.enabled", matchIfMissing = true)
     protected class NettyFeignLoadBalancedConfiguration {
 
@@ -47,7 +47,7 @@ public class NettyFeignAutoConfiguration {
         public Client feignClient(CachingSpringLoadBalancerFactory cachingFactory,
                                   SpringClientFactory clientFactory) {
             //使用负载均衡的方式
-            return new LoadBalancerFeignClient(new NettyClient(), cachingFactory, clientFactory);
+            return new LoadBalancerFeignClient(new FeignNettyClient(), cachingFactory, clientFactory);
         }
 
     }

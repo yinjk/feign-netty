@@ -13,6 +13,8 @@ public class Constants {
 
     public static final String FEIGN_NETTY_PORT_KEY = "feign.netty.port";
 
+    public static final String DISCOVERY_CLIENT = "discoveryClient";
+
 
     public static final String PROVIDER = "provider";
 

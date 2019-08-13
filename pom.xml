@@ -19,6 +19,23 @@
         <spring-cloud.version>Dalston.SR5</spring-cloud.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>Central</id>
+            <url>http://192.168.2.34:08081/nexus/content/groups/public/</url>
+        </repository>
+    </repositories>
+    <distributionManagement>
+        <repository>
+            <id>if_release</id>
+            <url>http://192.168.2.34:08081/nexus/content/repositories/if_release</url>
+        </repository>
+        <snapshotRepository>
+            <id>if_snapshots</id>
+            <url>http://192.168.2.34:08081/nexus/content/repositories/if_snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -34,7 +51,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.6.Final</version>
+            <version>4.1.12.Final</version>
         </dependency>
         <!-- 序列化 -->
         <dependency>

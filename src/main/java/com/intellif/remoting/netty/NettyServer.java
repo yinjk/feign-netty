@@ -18,7 +18,6 @@ package com.intellif.remoting.netty;
 
 
 import com.intellif.common.Constants;
-import com.intellif.remoting.RemotingException;
 import com.intellif.remoting.Server;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -36,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;

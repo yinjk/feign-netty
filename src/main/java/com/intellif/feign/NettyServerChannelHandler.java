@@ -61,28 +61,32 @@ public class NettyServerChannelHandler extends AbstractNettyChannelHandler {
         try {
             executor.execute(() -> { //异步处理http请求
                 long starTime = new Date().getTime();
-                System.out.printf("server start received request: => %d \n", new Date().getTime());
+//                System.out.printf("server start received request: => %d \n", new Date().getTime());
                 TransferRequest req = JSON.parseObject((String) message, TransferRequest.class);
-                System.out.printf("server received request: %s => %d \n", req.getUuid(), new Date().getTime());
+//                System.out.printf("server received request: %s => %d \n", req.getUuid(), new Date().getTime());
                 TransferResponse response;
                 try {
                     response = mockHttpClient.execute(req);
-                    System.out.printf("server completed request: %s => %d \n", req.getUuid(), new Date().getTime());
+//                    System.out.printf("server completed request: %s => %d \n", req.getUuid(), new Date().getTime());
                 } catch (Exception e) {
                     //服务端执行请求过程中出现了任何异常，都将该异常直接返回给客户端
-                    log.error(e.getMessage());
+//                    log.error(e.getMessage());
                     TransferResponse errorResponse = TransferResponse.createErrorResponse(req, e.getMessage());
                     channel.writeAndFlush(JSON.toJSONString(errorResponse)); //将错误消息写回客户端
                     return;
                 }
                 // 将请求的执行结果返回给客户端
                 String responseJson = JSON.toJSONString(response);
-                System.out.printf("server json format request: %s => %d \n", req.getUuid(), new Date().getTime());
+//                System.out.printf("server json format request: %s => %d \n", req.getUuid(), new Date().getTime());
                 channel.writeAndFlush(responseJson); //回复消息
-                System.out.printf("server send response: %s => %d \n", response.getUuid(), new Date().getTime());
-                System.out.printf("hand request: %s => %d ms \n", req.getUuid(), new Date().getTime() - starTime);
+//                System.out.printf("server send response: %s => %d \n", response.getUuid(), new Date().getTime());
+//                System.out.printf("hand request: %s => %d ms \n", req.getUuid(), new Date().getTime() - starTime);
+//                log.error(" =====================测试（测试完成之后请删除）================ ");
+//                log.error("|                  execute by netty server!                |");
+//                log.error(" =====================测试（测试完成之后请删除）================ ");
             });
         } catch (RejectedExecutionException e) { //阻塞队列满了，直接拒绝所有连接，返回服务器当前忙
+            System.out.println("服务器忙，主动拒绝响应。。。");
             TransferRequest req = JSON.parseObject((String) message, TransferRequest.class);
             TransferResponse errorResponse = TransferResponse.create503ErrorResponse(req);
             //直接返回，状态码为503，表示当前服务器忙碌，暂时不可用

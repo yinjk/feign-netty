@@ -150,19 +150,20 @@ public class NettyClient {
 
     public Object sendSync(TransferRequest request, long timeout, TimeUnit unit) throws RemotingException {
         Date start = new Date();
-        System.out.printf("start request %s : => %d \n", request.getUuid(), new Date().getTime());
+//        System.out.printf("start request %s : => %d \n", request.getUuid(), new Date().getTime());
         if (!isConnected()) {
             System.out.println("reconnect");
             doConnect();
         }
         Channel channel = getChannel();
-        channel.writeAndFlush(JSON.toJSONString(request));
         CountDownLatch latch = new CountDownLatch(1);
         handler.setLatch(request.getUuid(), latch); //把latch设置到handler里面，方便在handler中获取到结果时通知这边停止等待
+        //这里顺序很重要，一定要先把latch放在handler中，然后再发送请求给服务端，如果反过来可能会导致服务端响应太快，还没有吧latch放进map，就接收到响应，此时是拿不到这个latch的
+        channel.writeAndFlush(JSON.toJSONString(request));
         try {
-            System.out.printf("begin await request %s : => %d \n", request.getUuid(), new Date().getTime());
+//            System.out.printf("begin await request %s : => %d \n", request.getUuid(), new Date().getTime());
             if (latch.await(timeout, unit)) { //在超时之前成功返回
-                System.out.printf("get request return %s : => %d \n", request.getUuid(), new Date().getTime());
+//                System.out.printf("get request return %s : => %d \n", request.getUuid(), new Date().getTime());
                 System.out.println("get result " + (new Date().getTime() - start.getTime()));
                 return handler.getResult(request.getUuid());
             }

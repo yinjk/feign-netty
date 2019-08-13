@@ -6,6 +6,7 @@ import com.intellif.feign.transfer.TransferRequest;
 import com.intellif.feign.transfer.TransferResponse;
 import com.intellif.listener.NettyInitRunListener;
 import com.intellif.remoting.RemotingException;
+import com.intellif.remoting.netty.NettyClient;
 import feign.Client;
 import feign.Request;
 import feign.Response;
@@ -27,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  * @author inori
  * @create 2019-07-08 14:20
  */
-public class NettyClient implements Client {
+public class FeignNettyClient implements Client {
 
     //默认的http执行器
     private Client httpClient = new Client.Default(null, null);
@@ -35,21 +36,15 @@ public class NettyClient implements Client {
     /**
      * logger
      */
-    private static final Logger log = LoggerFactory.getLogger(NettyClient.class);
+    private static final Logger log = LoggerFactory.getLogger(FeignNettyClient.class);
 
     @Override
     public Response execute(Request request, Request.Options options) throws IOException {
         Date start = new Date();
-        if (false) { //TODO 仅做测试使用，测试完之后 去掉
-            request.headers().put("Kee", Collections.EMPTY_LIST);
-            Response response = httpClient.execute(request, options);
-            System.out.println("=================?> get result: " + (new Date().getTime() - start.getTime()));
-            return response;
-        }
         String url = request.url();
         URI uri = URI.create(url);
         String remoteService = uri.getHost() + ":" + uri.getPort();
-        com.intellif.remoting.netty.NettyClient nettyClient = NettyInitRunListener.nettyClientMap.get(remoteService);
+        NettyClient nettyClient = NettyInitRunListener.nettyClientMap.get(remoteService);
         if (nettyClient == null) { //没有拿到客户端，应该去重新获取
             try {
                 //TODO 获取netty长连接应该考虑一些策略，以提升并发下的性能，如：第一次获取失败2s后再重试，第二次获取失败4秒后尝试，第三次获取失败8秒后重试（参照ribbon的策略）
@@ -81,7 +76,7 @@ public class NettyClient implements Client {
      * @return 建立好的netty长连接
      * @throws Throwable 获取长连接过程发生的任何错误都会抛出
      */
-    public synchronized com.intellif.remoting.netty.NettyClient getNettyClient(URI uri) throws Throwable {
+    public synchronized NettyClient getNettyClient(URI uri) throws Throwable {
         String target = uri.getHost() + ":" + uri.getPort();
         DiscoveryClient discoverClient = DiscoverClientProvider.getDiscoverClient();
         List<String> services = discoverClient.getServices();
@@ -97,7 +92,7 @@ public class NettyClient implements Client {
                     } else { // 如果metadata中没有netty-port的信息
                         nettyIntPort = NettyInitRunListener.autoNettyPort(instance.getPort());
                     }
-                    log.info("Connect to netty server " + instance.getHost() + ":" + nettyPort);
+                    log.info("Connect to netty server " + instance.getHost() + ":" + nettyIntPort);
                     return new com.intellif.remoting.netty.NettyClient(instance.getHost(), nettyIntPort, new NettyClientChannelHandler());
                 }
             }

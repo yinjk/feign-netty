@@ -20,16 +20,22 @@ import io.netty.channel.Channel;
 
 import java.net.InetSocketAddress;
 
+/**
+ * 远程调用相关的异常
+ *
+ * @author inori
+ * @create 2019-07-05 14:27
+ */
 public class RemotingException extends Exception {
 
     private static final long serialVersionUID = -3160452149606778709L;
 
-    private InetSocketAddress localAddress;
+    private final InetSocketAddress localAddress;
 
-    private InetSocketAddress remoteAddress;
+    private final InetSocketAddress remoteAddress;
 
     public RemotingException(Channel channel, String msg) {
-        this(channel == null ? null : (InetSocketAddress) channel.localAddress(), channel == null ? null :  (InetSocketAddress)channel.remoteAddress(),
+        this(channel == null ? null : (InetSocketAddress) channel.localAddress(), channel == null ? null : (InetSocketAddress) channel.remoteAddress(),
                 msg);
     }
 
@@ -41,7 +47,7 @@ public class RemotingException extends Exception {
     }
 
     public RemotingException(Channel channel, Throwable cause) {
-        this(channel == null ? null :  (InetSocketAddress) channel.localAddress(), channel == null ? null :  (InetSocketAddress) channel.localAddress(),
+        this(channel == null ? null : (InetSocketAddress) channel.localAddress(), channel == null ? null : (InetSocketAddress) channel.localAddress(),
                 cause);
     }
 
@@ -53,7 +59,7 @@ public class RemotingException extends Exception {
     }
 
     public RemotingException(Channel channel, String message, Throwable cause) {
-        this(channel == null ? null :  (InetSocketAddress) channel.localAddress(), channel == null ? null :  (InetSocketAddress) channel.remoteAddress(),
+        this(channel == null ? null : (InetSocketAddress) channel.localAddress(), channel == null ? null : (InetSocketAddress) channel.remoteAddress(),
                 message, cause);
     }
 

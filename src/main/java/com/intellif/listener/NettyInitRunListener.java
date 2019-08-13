@@ -12,12 +12,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.client.serviceregistry.Registration;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.servlet.DispatcherServlet;
 
 import java.lang.reflect.InvocationTargetException;
@@ -60,7 +62,7 @@ public class NettyInitRunListener implements SpringApplicationRunListener {
     /**
      * 确保该类只被初始化一次
      */
-    private AtomicBoolean inited = new AtomicBoolean(false);
+    private static AtomicBoolean initialized = new AtomicBoolean(false);
 
     private void connectRemote(final ApplicationContext context) throws Throwable {
         nettyServer = startNettyServer(context); //启动netty服务端
@@ -93,20 +95,35 @@ public class NettyInitRunListener implements SpringApplicationRunListener {
         return "";
     }
 
+    /**
+     * 启动netty服务器
+     *
+     * @param context spring上下文
+     * @return netty服务器
+     * @throws Throwable
+     */
     private NettyServer startNettyServer(ApplicationContext context) throws Throwable {
         initServer(context);
         Environment environment = context.getEnvironment();
-        DiscoveryClient discoveryClient = context.getBean(DiscoveryClient.class);
-        ServiceInstance localServiceInstance = discoveryClient.getLocalServiceInstance(); //获取当前服务信息
+        DiscoveryClient discoveryClient = context.getBean(Constants.DISCOVERY_CLIENT, DiscoveryClient.class);
+        Registration registration = context.getBean(Registration.class);
+        ServiceInstance localServiceInstance = localServiceInstance(discoveryClient, registration); //获取当前服务信息
         String nettyPort = localServiceInstance.getMetadata().get(Constants.DISCOVERY_METADATA_FEIGN_NETTY_PORT_KEY);
         if (nettyPort == null || StringUtils.isBlank(nettyPort)) {//没有配置netty port
             // 根据统一算法自动生成nettyPort
             int nettyPortInt = autoNettyPort(Integer.parseInt(environment.getProperty("server.port")));
             nettyPort = String.valueOf(nettyPortInt);
         }
+        log.error("-------------- netty server port ----------->" + nettyPort);
         return new NettyServer(Integer.parseInt(nettyPort), new NettyServerChannelHandler(context.getBean(DispatcherServlet.class)));
     }
 
+    /**
+     * 启动netty客户端，与远程服务建立连接
+     *
+     * @param serviceInstances 可能会调用的所有服务端实例
+     * @throws Throwable 客户端连不上抛出异常
+     */
     private void doConnect(List<ServiceInstance> serviceInstances) throws Throwable {
         for (ServiceInstance serviceInstance : serviceInstances) {
             String remoteService = serviceInstance.getHost() + ":" + serviceInstance.getPort();
@@ -119,9 +136,31 @@ public class NettyInitRunListener implements SpringApplicationRunListener {
         }
     }
 
+    /**
+     * 从注册中心中寻找指定serverName的所有实例
+     *
+     * @param context     spring上下文
+     * @param serviceName 远程服务名
+     * @return 所有的远程服务实例
+     */
     private List<ServiceInstance> searchInDiscovery(ApplicationContext context, String serviceName) {
         DiscoveryClient discoveryClient = context.getBean(DiscoveryClient.class);
         return discoveryClient.getInstances(serviceName);
+    }
+
+    /**
+     * 获取本地服务实例
+     *
+     * @param discoveryClient 注册中心客户端
+     * @param registration    Registration
+     * @return 本地服务实例
+     */
+    public ServiceInstance localServiceInstance(DiscoveryClient discoveryClient, Registration registration) {
+        List<ServiceInstance> list = discoveryClient.getInstances(registration.getServiceId());
+        if (!CollectionUtils.isEmpty(list)) {
+            return list.get(0);
+        }
+        return null;
     }
 
     /**
@@ -162,7 +201,7 @@ public class NettyInitRunListener implements SpringApplicationRunListener {
         if ("bootstrap".equals(applicationName)) {
             return;
         }
-        if (inited.get()) { //如果已经被初始化过了，直接跳过（确保只初始化一次）
+        if (initialized.get()) { //如果已经被初始化过了，直接跳过（确保只初始化一次）
             return;
         }
         this.environment = environment;
@@ -201,8 +240,8 @@ public class NettyInitRunListener implements SpringApplicationRunListener {
     /**
      * 在springboot启动完成时去连接当前服务的所有provider
      *
-     * @param context
-     * @param exception
+     * @param context spring上下文
+     * @param exception springboot启动中的异常
      */
     @Override
     public void finished(ConfigurableApplicationContext context, Throwable exception) {
@@ -213,10 +252,9 @@ public class NettyInitRunListener implements SpringApplicationRunListener {
         if (exception != null) { //SpringBoot启动失败了，这里什么都不做
             return;
         }
-        if (inited.get()) { //如果已经被初始化过了，直接跳过（确保只初始化一次）
+        if (!initialized.compareAndSet(false, true)) {//如果已经被初始化过了，直接跳过（确保只初始化一次）
             return;
         }
-        inited.set(true);
         if (Boolean.FALSE.toString().equals(environment.getProperty("feign.netty.enabled"))) { //关闭feign-netty
             return;
         }
