@@ -38,11 +38,6 @@
             <artifactId>feign-netty</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>com.intellif</groupId>
-            <artifactId>intellif-trace-client</artifactId>
-            <version>1.0.2-SNAPSHOT</version>
-        </dependency>
         <!-- 监控 -->
         <dependency>
             <groupId>io.prometheus</groupId>
