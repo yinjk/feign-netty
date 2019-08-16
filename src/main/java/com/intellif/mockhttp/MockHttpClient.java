@@ -9,7 +9,6 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,10 +20,12 @@ import java.util.Map;
  */
 public class MockHttpClient {
 
-    private DispatcherServletWrap dispatcherServlet;
+    private DispatcherServletProxy dispatcherServletProxy;
 
     public MockHttpClient(DispatcherServlet dispatcherServlet) {
-        this.dispatcherServlet = new DispatcherServletWrap(dispatcherServlet);
+        if (dispatcherServlet instanceof DispatcherServletProxy) {
+            this.dispatcherServletProxy = (DispatcherServletProxy) dispatcherServlet;
+        }
     }
 
     /**
@@ -37,7 +38,7 @@ public class MockHttpClient {
     public TransferResponse execute(TransferRequest request) throws Exception {
         MockHttpServletRequest mockReq = toMockHttpRequest(request);
         MockHttpServletResponse mockRes = new MockHttpServletResponse();
-        dispatcherServlet.doService(mockReq, mockRes);
+        dispatcherServletProxy.doProcessRequest(mockReq, mockRes);
         Map<String, Collection<String>> headers = new HashMap<>();
         for (String name : mockRes.getHeaderNames()) {
             headers.put(name, mockRes.getHeaders(name));

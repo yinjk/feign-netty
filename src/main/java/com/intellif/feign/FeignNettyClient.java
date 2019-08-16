@@ -51,6 +51,7 @@ public class FeignNettyClient implements Client {
                 nettyClient = getNettyClient(uri);
                 NettyInitRunListener.nettyClientMap.putIfAbsent(remoteService, nettyClient);
             } catch (Throwable throwable) {// 链接失败，考虑切换回http的方式
+                log.error(throwable.getMessage());
                 log.warn("Connect netty server failed, using original http client");
                 return httpClient.execute(request, options);
             }

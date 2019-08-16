@@ -22,8 +22,6 @@ import org.springframework.core.env.MapPropertySource;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.servlet.DispatcherServlet;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,7 +101,6 @@ public class NettyInitRunListener implements SpringApplicationRunListener {
      * @throws Throwable
      */
     private NettyServer startNettyServer(ApplicationContext context) throws Throwable {
-        initServer(context);
         Environment environment = context.getEnvironment();
         DiscoveryClient discoveryClient = context.getBean(Constants.DISCOVERY_CLIENT, DiscoveryClient.class);
         Registration registration = context.getBean(Registration.class);
@@ -173,22 +170,6 @@ public class NettyInitRunListener implements SpringApplicationRunListener {
         return port + 10000 > 30000 ? port + 123 : port + 10000;
     }
 
-    /**
-     * 手动刷新DispatcherServlet，以保证第一次调用可以正确的处理
-     *
-     * @param context spring上下文
-     * @throws NoSuchMethodException
-     * @throws InvocationTargetException
-     * @throws IllegalAccessException
-     */
-    private void initServer(ApplicationContext context) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Method onRefresh = null;
-        DispatcherServlet dispatcherServlet = context.getBean(DispatcherServlet.class);
-        onRefresh = DispatcherServlet.class.getDeclaredMethod("onRefresh", ApplicationContext.class);
-        onRefresh.setAccessible(true);
-        onRefresh.invoke(dispatcherServlet, context);
-
-    }
 
     @Override
     public void starting() {

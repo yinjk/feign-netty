@@ -86,7 +86,7 @@ public class NettyClient {
             @Override
             protected void initChannel(Channel ch) throws Exception {
                 ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
-                        .addLast("decoder", new LengthFieldBasedFrameDecoder(1024, 0, 8, 0, 8))
+                        .addLast("decoder", new LengthFieldBasedFrameDecoder(1024 * 10, 0, 8, 0, 8))
                         .addLast("encoder", new LengthFieldPrepender(8))
                         .addLast("stringDecoder", new StringDecoder())
                         .addLast("stringEncoder", new StringEncoder())
@@ -170,10 +170,10 @@ public class NettyClient {
 
         } catch (InterruptedException e) {
             logger.error(e.getMessage());
-            throw new RemotingException(channel, "the request is interrupted!");
+            throw new RemotingException(channel, "The request is interrupted!");
         }
         //请求超时，直接抛异常
-        throw new RemotingException(channel, "请求超时！");
+        throw new RemotingException(channel, "The remote service call timeout!");
     }
 
     public boolean isConnected() {

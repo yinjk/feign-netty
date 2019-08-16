@@ -3,10 +3,13 @@ package com.intellif.provider.web;
 import com.intellif.provider.bean.User;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.Map;
+
+import static org.springframework.web.context.request.RequestAttributes.SCOPE_REQUEST;
 
 /**
  * @author inori
@@ -22,6 +25,13 @@ public class NameProvider {
 
     @PostMapping("/hello")
     public String hello(@RequestBody Map<String, String> param) {
+//        try {
+//            RequestContextHolder.getRequestAttributes().setAttribute("requestStartTime",
+//                    System.nanoTime(), SCOPE_REQUEST);
+//        } catch (Throwable throwable) {
+//            System.out.println(throwable);
+//        }
+
         System.out.println(param);
         return "hello !";
     }

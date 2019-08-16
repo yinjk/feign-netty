@@ -88,7 +88,7 @@ public class NettyServer implements Server {
                     protected void initChannel(NioSocketChannel ch) throws Exception {
                         ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
                                 //tcp 粘包、半包 编解码处理器
-                                .addLast("decoder", new LengthFieldBasedFrameDecoder(1024, 0, 8, 0, 8))
+                                .addLast("decoder", new LengthFieldBasedFrameDecoder(1024 * 10, 0, 8, 0, 8))
                                 .addLast("encoder", new LengthFieldPrepender(8))
                                 .addLast("stringDecoder", new StringDecoder())
                                 .addLast("stringEncoder", new StringEncoder())

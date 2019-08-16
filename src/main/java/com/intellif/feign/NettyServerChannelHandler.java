@@ -70,7 +70,8 @@ public class NettyServerChannelHandler extends AbstractNettyChannelHandler {
 //                    System.out.printf("server completed request: %s => %d \n", req.getUuid(), new Date().getTime());
                 } catch (Exception e) {
                     //服务端执行请求过程中出现了任何异常，都将该异常直接返回给客户端
-//                    log.error(e.getMessage());
+                    log.error("=======---======+>");
+                    e.printStackTrace();
                     TransferResponse errorResponse = TransferResponse.createErrorResponse(req, e.getMessage());
                     channel.writeAndFlush(JSON.toJSONString(errorResponse)); //将错误消息写回客户端
                     return;

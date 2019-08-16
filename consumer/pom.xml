@@ -25,6 +25,10 @@
             <artifactId>spring-cloud-starter-eureka</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-feign</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
@@ -33,6 +37,11 @@
             <groupId>com.intellif</groupId>
             <artifactId>feign-netty</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.intellif</groupId>
+            <artifactId>intellif-trace-client</artifactId>
+            <version>1.0.2-SNAPSHOT</version>
         </dependency>
         <!-- 监控 -->
         <dependency>
